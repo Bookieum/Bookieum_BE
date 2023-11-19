@@ -61,7 +61,6 @@ def kakao_login(request):
         user_list.share_cnt = 0
         user_list.register_datetime = dt.datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
         user_list.save()
-        user_list.save()
         request.session['user_id'] = social_id
     else:
         request.session['user_id'] = social_id 
