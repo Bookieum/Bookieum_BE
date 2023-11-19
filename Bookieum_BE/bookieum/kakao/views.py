@@ -57,7 +57,6 @@ def kakao_login(request):
         user_list.user_id = social_id
         user_list.user_name = user_name
         user_list.gender = gender
-        user_list.age = 25 # 일단 임의로 넣기
         user_list.reading_level = 0
         user_list.share_cnt = 0
         user_list.register_datetime = dt.datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
