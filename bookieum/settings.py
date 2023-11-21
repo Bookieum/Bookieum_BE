@@ -99,7 +99,10 @@ DATABASES = {
         'USER': get_env_variable("MYSQL_USER"),
         'PASSWORD': get_env_variable("MYSQL_PASSWORD"),
         'HOST': get_env_variable("MYSQL_HOST"),
-        'PORT': get_env_variable("MYSQL_PORT")
+        'PORT': get_env_variable("MYSQL_PORT"),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
