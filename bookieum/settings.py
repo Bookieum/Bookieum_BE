@@ -19,7 +19,7 @@ with open(secret_file) as f:
 
 def get_env_variable(var_name):
   try:
-    return os.environ[var_name]
+    return secrets[var_name]
   except KeyError:
     error_msg = 'Set the {} environment variable'.format(var_name)
     raise ImproperlyConfigured(error_msg)
@@ -27,10 +27,6 @@ def get_env_variable(var_name):
 SECRET_KEY = get_env_variable("SECRET_KEY")
 DEBUG = True
 ALLOWED_HOSTS = ['*']
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True
-
 
 
 INSTALLED_APPS = [
