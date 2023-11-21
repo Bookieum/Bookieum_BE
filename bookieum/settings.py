@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # secrets.json
 secret_file = os.path.join(BASE_DIR, 'secrets.json') 
+
 with open(secret_file) as f:
     secrets = json.loads(f.read())
 
@@ -20,6 +21,7 @@ SECRET_KEY = get_secret("SECRET_KEY")
 DEBUG = True
 ALLOWED_HOSTS = []
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,7 +32,8 @@ INSTALLED_APPS = [
     'corsheaders',
     
     # my app
-    'bookieum',    
+    'bookieum',
+    'kakao',
 ]
 
 

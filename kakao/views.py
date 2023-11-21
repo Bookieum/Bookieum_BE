@@ -36,7 +36,7 @@ def kakao_login(request):
     #     return Response(status=status.HTTP_400_BAD_REQUEST)
     
     # 3) kakao 회원정보 요청
-    user_info_json = request_user_info(access_token) 
+    user_info_json = request_user_info(access_token)
     
     # 4) 회원가입 및 로그인
     social_type = 'kakao'
@@ -52,7 +52,7 @@ def kakao_login(request):
     birth_date = kakao_account.get('birthday')
     gender = kakao_account.get('gender')
     
-    if not list(models.Users.objects.filter(user_id=social_id)):
+    if not models.Users.objects.filter(user_id=social_id).exists():
         user_list = models.Users()
         user_list.user_id = social_id
         user_list.user_name = user_name
@@ -65,14 +65,14 @@ def kakao_login(request):
     else:
         request.session['user_id'] = social_id 
     
-    user_info = {
-        'social_type': social_type,
-        'social_id': social_id,
-        'user_email': user_email,
-        'user_name': user_name,
-        'gender': gender,
-        'birth_date': birth_date
-    }
+    # user_info = {
+    #     'social_type': social_type,
+    #     'social_id': social_id,
+    #     'user_email': user_email,
+    #     'user_name': user_name,
+    #     'gender': gender,
+    #     'birth_date': birth_date
+    # }
         
     return redirect(f'http://localhost:3000?token={access_token}') 
  
