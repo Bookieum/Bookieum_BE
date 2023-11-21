@@ -10,14 +10,21 @@ secret_file = os.path.join(BASE_DIR, 'secrets.json')
 with open(secret_file) as f:
     secrets = json.loads(f.read())
 
-def get_secret(setting):
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = "Set the {} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
+# def get_secret(setting):
+#     try:
+#         return secrets[setting]
+#     except KeyError:
+#         error_msg = "Set the {} environment variable".format(setting)
+#         raise ImproperlyConfigured(error_msg)
 
-SECRET_KEY = get_secret("SECRET_KEY")
+def get_env_variable(var_name):
+  try:
+    return os.environ[var_name]
+  except KeyError:
+    error_msg = 'Set the {} environment variable'.format(var_name)
+    raise ImproperlyConfigured(error_msg)
+
+SECRET_KEY = get_env_variable("SECRET_KEY")
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -44,8 +51,8 @@ INSTALLED_APPS = [
 SOCIALACCOUNT_PROVIDERS = {
     'kakao': {
         'APP': {
-            'client_id': get_secret("KAKAO_REST_API_KEY"),
-            'secret': get_secret("KAKAO_CLIENT_SECRET_KEY"),
+            'client_id': get_env_variable("KAKAO_REST_API_KEY"),
+            'secret': get_env_variable("KAKAO_CLIENT_SECRET_KEY"),
             'key': ''
         }
     }
@@ -91,11 +98,11 @@ WSGI_APPLICATION = 'bookieum.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': get_secret("MYSQL_NAME"),
-        'USER': get_secret("MYSQL_USER"),
-        'PASSWORD': get_secret("MYSQL_PASSWORD"),
-        'HOST': get_secret("MYSQL_HOST"),
-        'PORT': get_secret("MYSQL_PORT")
+        'NAME': get_env_variable("MYSQL_NAME"),
+        'USER': get_env_variable("MYSQL_USER"),
+        'PASSWORD': get_env_variable("MYSQL_PASSWORD"),
+        'HOST': get_env_variable("MYSQL_HOST"),
+        'PORT': get_env_variable("MYSQL_PORT")
     }
 }
 
