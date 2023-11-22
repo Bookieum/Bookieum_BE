@@ -23,6 +23,7 @@ kakao_profile_uri = "https://kapi.kakao.com/v2/user/me"
 
 def kakao_login(request):
     # access token 받아오기
+    print(access_token)
     access_token = request.POST.get("code")
     
     # kakao 회원정보 요청
