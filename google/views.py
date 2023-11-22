@@ -13,6 +13,7 @@ google_profile_uri = "https://www.googleapis.com/oauth2/v1/userinfo"
 @csrf_exempt
 @require_POST
 def google_login(request):
+    
     # data 받아오기
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -29,12 +30,14 @@ def google_login(request):
     if not access_token:
         error_message = {'message': 'access token을 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
+  
     
     # google 회원정보 요청
     user_info_json = requests.get(f"{google_profile_uri}?access_token={access_token}").json()
     if not user_info_json:
         error_message = {'message': '유저 정보를 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
+    print(user_info_json)
     
     # 회원가입 및 로그인
     social_type = 'google'
