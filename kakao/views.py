@@ -1,42 +1,32 @@
-from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from rest_framework.response import Response
-from django.http import HttpResponseRedirect
+from django.http import Http404
 from bookieum import models
 
-from django.conf import settings
 import requests, json
 import datetime as dt
 from pytz import timezone
 
-import os
-
-# KAKAO_CONFIG = {
-#     "KAKAO_REST_API_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['client_id'],
-#     "KAKAO_CLIENT_SECRET_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['secret'], 
-# }
-
-# kakao_login_uri = "https://kauth.kakao.com/oauth/authorize"
-# kakao_token_uri = "https://kauth.kakao.com/oauth/token"
 kakao_profile_uri = "https://kapi.kakao.com/v2/user/me"
 
 
 def kakao_login(request):
     # access token 받아오기
-    print(access_token)
-    access_token = request.POST.get("code")
+    access_token = request.POST.get("access_token")
+    if not access_token:
+        return Http404("access token을 받아오지 못했습니다.")
     
     # kakao 회원정보 요청
     user_info_json = request_user_info(access_token)
+    if not user_info_json:
+        return Http404("유저 정보를 받아오지 못했습니다.")
     
     # 회원가입 및 로그인
     social_type = 'kakao'
     social_id = f"{social_type}_{user_info_json.get('id')}"
     
     kakao_account = user_info_json.get('kakao_account')
-    # 에러 처리
-    # if not kakao_account:
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
+    if not kakao_account:
+        return Http404("카카오 계정을 받아오지 못했습니다.")
     
     user_name = kakao_account.get('profile').get('nickname')
     gender = kakao_account.get('gender')
