@@ -17,19 +17,23 @@ def kakao_login(request):
             data = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError as e:
             # JSON 디코딩 중에 오류가 발생한 경우
-            raise Http404("JSONDecodeError 발생")
+            error_message = {'error': 'Invalid JSON format'}
+            return JsonResponse(error_message, status=400)
         if not data:
-            raise Http404("data을 받아오지 못했습니다.")
+            error_message = {'error': 'data을 받아오지 못했습니다.'}
+            return JsonResponse(error_message, status=400)
         
         # access token 추출
         access_token = data["access_token"]
         if not access_token:
-            raise Http404("access token을 받아오지 못했습니다.\ndata:", data)
+            error_message = {'error': 'access token을 받아오지 못했습니다.'}
+            return JsonResponse(error_message, status=400)
         
         # kakao 회원정보 요청
         user_info_json = request_user_info(access_token)
         if not user_info_json:
-            raise Http404("유저 정보를 받아오지 못했습니다.")
+            error_message = {'error': '유저 정보를 받아오지 못했습니다.'}
+            return JsonResponse(error_message, status=400)
         
         # 회원가입 및 로그인
         social_type = 'kakao'
@@ -37,7 +41,8 @@ def kakao_login(request):
         
         kakao_account = user_info_json.get('kakao_account')
         if not kakao_account:
-            raise Http404("카카오 계정을 받아오지 못했습니다.")
+            error_message = {'error': '카카오 계정을 받아오지 못했습니다.'}
+            return JsonResponse(error_message, status=400)
         
         user_name = kakao_account.get('profile').get('nickname')
         gender = kakao_account.get('gender')
@@ -64,7 +69,8 @@ def kakao_login(request):
         return JsonResponse({'user_info': user_info})
     # POST 요청이 아닐 경우
     else:
-        raise Http404("잘못된 요청입니다. (GET 요청)")
+        error_message = {'error': 'POST 요청만 가능합니다.'}
+        return JsonResponse(error_message, status=400)
            
 
 # 회원 정보 요청 함수
