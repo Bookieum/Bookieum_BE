@@ -11,14 +11,13 @@ from pytz import timezone
 
 import os
 
-KAKAO_CONFIG = {
-    "KAKAO_REST_API_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['client_id'],
-    "KAKAO_REDIRECT_URI": "http://localhost:8000/kakao/oauth",
-    "KAKAO_CLIENT_SECRET_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['secret'], 
-}
+# KAKAO_CONFIG = {
+#     "KAKAO_REST_API_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['client_id'],
+#     "KAKAO_CLIENT_SECRET_KEY": settings.SOCIALACCOUNT_PROVIDERS['kakao']['APP']['secret'], 
+# }
 
-kakao_login_uri = "https://kauth.kakao.com/oauth/authorize"
-kakao_token_uri = "https://kauth.kakao.com/oauth/token"
+# kakao_login_uri = "https://kauth.kakao.com/oauth/authorize"
+# kakao_token_uri = "https://kauth.kakao.com/oauth/token"
 kakao_profile_uri = "https://kapi.kakao.com/v2/user/me"
 
 
