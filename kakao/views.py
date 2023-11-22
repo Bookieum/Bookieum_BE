@@ -13,12 +13,12 @@ def kakao_login(request):
     # access token 받아오기
     access_token = request.POST.get("access_token")
     if not access_token:
-        return Http404("access token을 받아오지 못했습니다.")
+        raise Http404("access token을 받아오지 못했습니다.")
     
     # kakao 회원정보 요청
     user_info_json = request_user_info(access_token)
     if not user_info_json:
-        return Http404("유저 정보를 받아오지 못했습니다.")
+        raise Http404("유저 정보를 받아오지 못했습니다.")
     
     # 회원가입 및 로그인
     social_type = 'kakao'
@@ -26,7 +26,7 @@ def kakao_login(request):
     
     kakao_account = user_info_json.get('kakao_account')
     if not kakao_account:
-        return Http404("카카오 계정을 받아오지 못했습니다.")
+        raise Http404("카카오 계정을 받아오지 못했습니다.")
     
     user_name = kakao_account.get('profile').get('nickname')
     gender = kakao_account.get('gender')
