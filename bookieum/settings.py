@@ -43,18 +43,9 @@ INSTALLED_APPS = [
     # my app
     'bookieum',
     'kakao',
+    'google',
 ]
 
-
-SOCIALACCOUNT_PROVIDERS = {
-    'kakao': {
-        'APP': {
-            'client_id': get_env_variable("KAKAO_REST_API_KEY"),
-            'secret': get_env_variable("KAKAO_CLIENT_SECRET_KEY"),
-            'key': ''
-        }
-    }
-}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
