@@ -13,7 +13,11 @@ kakao_profile_uri = "https://kapi.kakao.com/v2/user/me"
 def kakao_login(request):
     if request.method == 'POST':
         # data 받아오기
-        data = json.loads(request.body.decode('utf-8'))
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError as e:
+            # JSON 디코딩 중에 오류가 발생한 경우
+            return Http404("JSONDecodeError 발생")
         if not data:
             raise Http404("data을 받아오지 못했습니다.")
         
