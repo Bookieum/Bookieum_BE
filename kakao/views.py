@@ -26,7 +26,6 @@ def kakao_login(request):
     
     # access token 추출
     access_token = data["access_token"]
-    print(access_token)
     if not access_token:
         error_message = {'message': 'access token을 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
