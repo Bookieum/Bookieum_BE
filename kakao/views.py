@@ -17,7 +17,7 @@ def kakao_login(request):
             data = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError as e:
             # JSON 디코딩 중에 오류가 발생한 경우
-            return Http404("JSONDecodeError 발생")
+            raise Http404("JSONDecodeError 발생")
         if not data:
             raise Http404("data을 받아오지 못했습니다.")
         
