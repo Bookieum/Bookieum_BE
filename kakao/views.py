@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.http import Http404
+from django.views.decorators.csrf import csrf_exempt
 from bookieum import models
 
 import requests, json
