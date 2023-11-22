@@ -23,22 +23,13 @@ kakao_profile_uri = "https://kapi.kakao.com/v2/user/me"
 
 
 def kakao_login(request):
-    # 1) 코드 받아오기
-    code = request.GET.get("code")
-    # code 없을 경우 에러 발생
-    # if not code:
-    #     return Response(status=status.HTTP_400_BAD_REQUEST, data=error)
+    # access token 받아오기
+    access_token = request.POST.get("code")
     
-    # 2) access_token 요청
-    access_token = request_token(code)
-    # 토큰 없을 경우 에러 발생
-    # if not access_token:
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-    # 3) kakao 회원정보 요청
+    # kakao 회원정보 요청
     user_info_json = request_user_info(access_token)
     
-    # 4) 회원가입 및 로그인
+    # 회원가입 및 로그인
     social_type = 'kakao'
     social_id = f"{social_type}_{user_info_json.get('id')}"
     
@@ -48,8 +39,6 @@ def kakao_login(request):
         # return Response(status=status.HTTP_400_BAD_REQUEST)
     
     user_name = kakao_account.get('profile').get('nickname')
-    user_email = kakao_account.get('email')
-    birth_date = kakao_account.get('birthday')
     gender = kakao_account.get('gender')
     
     if not models.Users.objects.filter(user_id=social_id).exists():
@@ -65,34 +54,14 @@ def kakao_login(request):
     else:
         request.session['user_id'] = social_id 
     
-    # user_info = {
-    #     'social_type': social_type,
-    #     'social_id': social_id,
-    #     'user_email': user_email,
-    #     'user_name': user_name,
-    #     'gender': gender,
-    #     'birth_date': birth_date
-    # }
-        
-    return redirect(f'http://localhost:3000?token={access_token}') 
- 
- 
-# 토큰 요청 함수
-def request_token(code):       
-    request_data = {
-        'grant_type': 'authorization_code',
-        'client_id': KAKAO_CONFIG['KAKAO_REST_API_KEY'],
-        'redirect_uri': KAKAO_CONFIG['KAKAO_REDIRECT_URI'],
-        'client_secret': KAKAO_CONFIG['KAKAO_CLIENT_SECRET_KEY'],
-        'code': code,
+    user_info = {
+        'social_id': social_id,
+        'user_name': user_name,
+        'gender': gender,
     }
-    token_headers = {
-        'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
-    }
-    access_token = requests.post(kakao_token_uri, data=request_data, headers=token_headers).json().get('access_token')
     
-    return access_token
-
+    return JsonResponse({'user_info': user_info})
+        
 
 # 회원 정보 요청 함수
 def request_user_info(access_token):

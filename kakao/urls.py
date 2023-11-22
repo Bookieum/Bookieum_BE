@@ -1,6 +1,6 @@
-from django.urls import path, include
-import kakao.views as kakao_views
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('oauth', kakao_views.kakao_login),
+    path('oauth', views.kakao_login),
 ]
