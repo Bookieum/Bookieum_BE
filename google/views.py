@@ -12,7 +12,7 @@ google_profile_uri = "https://www.googleapis.com/oauth2/v1/userinfo"
 
 @csrf_exempt
 @require_POST
-def google_login(request):
+def naver_login(request):
     
     # data 받아오기
     try:
