@@ -10,7 +10,7 @@ from pytz import timezone
 
 @csrf_exempt
 @require_POST
-def google_login(request):
+def naver_login(request):
     # data 받아오기
     try:
         data = json.loads(request.body.decode('utf-8'))
