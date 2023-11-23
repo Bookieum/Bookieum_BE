@@ -9,4 +9,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('kakao/', include('kakao.urls')),
     path('google/', include('google.urls')),
+    path('naver/', include('naver.urls')),
 ]

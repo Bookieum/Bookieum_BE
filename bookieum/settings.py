@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'bookieum',
     'kakao',
     'google',
+    'naver',
 ]
 
 
