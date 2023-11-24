@@ -145,4 +145,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 세션 설정
 SESSION_COOKIE_AGE = 3600
-SESSION_ENGINE = 'django.contrib.sessions.backend.cache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
