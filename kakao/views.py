@@ -1,8 +1,9 @@
 from django.http import JsonResponse
-from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from bookieum import models
+from bookieum.models import *
 
 import requests, json
 import datetime as dt
@@ -60,7 +61,7 @@ def kakao_login(request):
         user_list.save()
         request.session['user_id'] = social_id
     else:
-        user_list = models.Users.objects.filter(user_id=social_id)
+        user_list = get_object_or_404(Users, user_id=social_id)
         user_list.access_token = access_token
         user_list.save()
     
