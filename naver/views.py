@@ -64,5 +64,5 @@ def naver_login(request):
     else:
         request.session['user_id'] = social_id
         
-    return JsonResponse({'message': 'successfully', 'data': user_info_json})
+    return JsonResponse({'message': 'successfully', 'data': user_info_json, 'access_token': access_token})
     
