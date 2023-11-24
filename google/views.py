@@ -58,5 +58,6 @@ def google_login(request):
         user_list = get_object_or_404(models.Users, user_id=social_id)
         user_list.access_token = access_token
         user_list.save()
+        request.session['user_id'] = social_id
     
     return JsonResponse({'message': 'successfully', 'data': user_info_json})

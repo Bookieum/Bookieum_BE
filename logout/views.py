@@ -30,5 +30,8 @@ def logout(request):
     user_list = get_object_or_404(models.Users, access_token=access_token)
     user_list.access_token = ''
     user_list.save()
+    print(request.session['user_id'])
+    del request.session['user_id']
+    print(request.session['user_id'])
     
     return JsonResponse({'message': 'successfully'})
