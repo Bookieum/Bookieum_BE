@@ -59,11 +59,13 @@ def kakao_login(request):
         user_list.register_datetime = dt.datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
         user_list.save()
         request.session['user_id'] = social_id
+        print('user_id' in request.session)
     else:
         user_list = get_object_or_404(models.Users, user_id=social_id)
         user_list.access_token = access_token
         user_list.save()
         request.session['user_id'] = social_id
+        print('user_id' in request.session)
     
     return JsonResponse({'message': 'successfully', 'data': kakao_account})
            
