@@ -37,7 +37,6 @@ def google_login(request):
     if not user_info_json:
         error_message = {'message': '유저 정보를 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
-    print(user_info_json)
     
     # 회원가입 및 로그인
     social_type = 'google'

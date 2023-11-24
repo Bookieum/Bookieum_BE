@@ -7,6 +7,8 @@ import requests, json
 import datetime as dt
 from pytz import timezone
 
+naver_profile_url = "https://openapi.naver.com/v1/nid/me"
+
 
 @csrf_exempt
 @require_POST
@@ -22,10 +24,45 @@ def naver_login(request):
         error_message = {'message': 'data을 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
     
-    # access token 추출
-    access_token = data["access_token"]
-    if not access_token:
-        error_message = {'message': 'access token을 받아오지 못했습니다.'}
+    # code 추출
+    code = data["code"]
+    if not code:
+        error_message = {'message': 'code를 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
     
-    return JsonResponse({'message': 'successfully', 'access_token': access_token})
+    # access token 요청
+    client_id = 'smCljzCdxfjm9Zp4EBDC'
+    client_secret = 'BBU6eL7SkK'
+    redirect_uri = 'http://ec2-13-124-237-120.ap-northeast-2.compute.amazonaws.com:8000/naver/oauth'
+
+    token_req = requests.post(f"https://nid.naver.com/oauth2.0/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={redirect_uri}")
+    access_token = token_req.json().get('access_token')
+    
+    # naver 회원정보 요청
+    user_info_json = requests.get(f"{naver_profile_url}?access_token={access_token}").json()
+    if not user_info_json:
+        error_message = {'message': '유저 정보를 받아오지 못했습니다.'}
+        return JsonResponse(error_message, status=400)
+    
+    # 회원가입 및 로그인
+    social_type = 'naver'
+    user_info = user_info_json.get('response')
+    social_id = f"{social_type}_{user_info.get('id')}"
+    user_name = user_info.get('name')
+    gender = 'female' if user_info.get('gender') == 'F' else 'male'
+    
+    if not models.Users.objects.filter(user_id=social_id).exists():
+        user_list = models.Users()
+        user_list.user_id = social_id
+        user_list.user_name = user_name
+        user_list.gender = gender
+        user_list.reading_level = 0
+        user_list.share_cnt = 0
+        user_list.register_datetime = dt.datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+        user_list.save()
+        request.session['user_id'] = social_id
+    else:
+        request.session['user_id'] = social_id
+        
+    return JsonResponse({'message': 'successfully', 'data': user_info_json})
+    
