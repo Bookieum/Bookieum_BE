@@ -13,23 +13,6 @@ class Answer(models.Model):
         db_table = 'Answer'
 
 
-class Books(models.Model):
-    isbn_id = models.CharField(primary_key=True, max_length=20)
-    title = models.CharField(max_length=30)
-    author = models.CharField(max_length=30)
-    publisher = models.CharField(max_length=30)
-    pubdate = models.DateField(db_column='pubDate')  # Field name made lowercase.
-    categoryid = models.CharField(db_column='categoryId', max_length=30)  # Field name made lowercase.
-    categoryname = models.CharField(db_column='categoryName', max_length=30)  # Field name made lowercase.
-    description = models.CharField(max_length=100, blank=True, null=True)
-    cover = models.CharField(max_length=30, blank=True, null=True)
-    page_num = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'Books'
-
-
 class Question(models.Model):
     question_id = models.CharField(max_length=20)
     question_content = models.CharField(max_length=20, blank=True, null=True)
