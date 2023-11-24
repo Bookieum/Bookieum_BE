@@ -56,7 +56,7 @@ def google_login(request):
         user_list.save()
         request.session['user_id'] = social_id
     else:
-        user_list = get_object_or_404(Users, user_id=social_id)
+        user_list = get_object_or_404(models.Users, user_id=social_id)
         user_list.access_token = access_token
         user_list.save()
     

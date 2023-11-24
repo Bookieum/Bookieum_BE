@@ -85,6 +85,7 @@ class Users(models.Model):
     home_addr = models.CharField(max_length=50, blank=True, null=True)
     register_datetime = models.DateTimeField()
     share_cnt = models.IntegerField()
+    access_token = models.CharField(max_length=100)
 
     class Meta:
         managed = False
