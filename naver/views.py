@@ -58,10 +58,13 @@ def naver_login(request):
         user_list.gender = gender
         user_list.reading_level = 0
         user_list.share_cnt = 0
+        user_list.access_token = access_token
         user_list.register_datetime = dt.datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
         user_list.save()
         request.session['user_id'] = social_id
     else:
+        user_list = models.Users()
+        user_list.access_token = access_token
         request.session['user_id'] = social_id
         
     return JsonResponse({'message': 'successfully', 'data': user_info_json, 'access_token': access_token})
