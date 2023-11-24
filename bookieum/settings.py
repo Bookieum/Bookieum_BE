@@ -54,6 +54,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", 
     "http://bookieum-bucket.s3-website.ap-northeast-2.amazonaws.com"
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -66,8 +67,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'bookieum.urls'
 
@@ -149,7 +148,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # 세션 설정
-SESSION_COOKIE_AGE = 3600
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_SAMESITE = 'Lax' 
+# SESSION_COOKIE_AGE = 3600
+# SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# SESSION_COOKIE_SAMESITE = 'Lax' 
