@@ -31,7 +31,8 @@ def logout(request):
     user_list.access_token = ''
     user_list.save()
     print(request.session['user_id'])
+    print('user_id' in request.session)
     del request.session['user_id']
-    print(request.session['user_id'])
+    print('user_id' in request.session)
     
     return JsonResponse({'message': 'successfully'})

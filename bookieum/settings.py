@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'kakao',
     'google',
     'naver',
+    'logout',
+    'main'
 ]
 
 
