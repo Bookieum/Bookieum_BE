@@ -85,7 +85,11 @@ class Users(models.Model):
     home_addr = models.CharField(max_length=50, blank=True, null=True)
     register_datetime = models.DateTimeField()
     share_cnt = models.IntegerField()
-    access_token = models.CharField(max_length=200)
+    access_token = models.CharField(max_length=300)
+    survey = models.CharField(max_length=5)
+    genre = models.CharField(max_length=200)
+    mood = models.CharField(max_length=200)
+    interest = models.CharField(max_length=200)
 
     class Meta:
         managed = False
