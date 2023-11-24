@@ -62,7 +62,7 @@ def kakao_login(request):
     else:
         user_list = models.Users.objects.filter(user_id=social_id)
         user_list.access_token = access_token
-        request.session['user_id'] = social_id
+        user_list.save()
     
     return JsonResponse({'message': 'successfully', 'data': kakao_account})
            
