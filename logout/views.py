@@ -34,7 +34,7 @@ def logout(request):
     print('user_id' in request.session)
     if 'user_id' in request.session:
         print(request.session['user_id'])
-    del request.session['user_id']
+        del request.session['user_id']
     print('user_id' in request.session)
     
     return JsonResponse({'message': 'successfully'})
