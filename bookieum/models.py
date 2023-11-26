@@ -78,23 +78,30 @@ class Review(models.Model):
 
 
 class Users(models.Model):
-    user_id = models.CharField(primary_key=True, max_length=20)
+    user_id = models.CharField(primary_key=True, max_length=50)
     user_name = models.CharField(max_length=20)
     reading_level = models.IntegerField()
-    gender = models.CharField(max_length=1)
+    gender = models.CharField(max_length=10, blank=True, null=True)
     home_addr = models.CharField(max_length=50, blank=True, null=True)
     register_datetime = models.DateTimeField()
     share_cnt = models.IntegerField()
-    access_token = models.CharField(max_length=300)
-    survey = models.CharField(max_length=5)
-    genre = models.CharField(max_length=200)
-    mood = models.CharField(max_length=200)
-    interest = models.CharField(max_length=200)
+    access_token = models.CharField(max_length=300, blank=True, null=True)
+    survey = models.CharField(max_length=5, default=False)
+    genre = models.CharField(max_length=200, blank=True, null=True)
+    mood = models.CharField(max_length=200, blank=True, null=True)
+    interest = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'Users'
 
+
+class AuthGroup(models.Model):
+    name = models.CharField(unique=True, max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_group'
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
