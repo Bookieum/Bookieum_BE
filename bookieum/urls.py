@@ -11,4 +11,6 @@ urlpatterns = [
     path('naver/', include('naver.urls')),
     path('logout/', include('logout.urls')),
     path('main/', include('main.urls')),
+    path('mypage/',include('mypage.urls')),
+    path('survey/',include('survey.urls')),
 ]
