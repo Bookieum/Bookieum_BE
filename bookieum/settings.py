@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'google',
     'naver',
     'logout',
-    'main'
+    'main',
+    'mypage',
+    'survey',
 ]
 
 
