@@ -10,5 +10,5 @@ urlpatterns = [
     path('google/', include('google.urls')),
     path('naver/', include('naver.urls')),
     path('logout/', include('logout.urls')),
-    # path('main/', include('main.urls')),
+    path('main/', include('main.urls')),
 ]
