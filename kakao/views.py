@@ -64,9 +64,6 @@ def kakao_login(request):
         user_list.access_token = access_token
         user_list.save()
         # request.session['user_id'] = social_id
-        
-    print('user_id' in request.session)
-    print(request.session['user_id'])
     
     return JsonResponse({'message': 'successfully', 'data': kakao_account})
            
