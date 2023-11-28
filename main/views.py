@@ -104,9 +104,9 @@ def recommend_ai_logic(file_path, text):
     
     # 요청 2. 추천 책들을 리스트로 리턴하게 짜주세요! (book_list)
     
-    data = joblib.load(r'ai/data.pkl')
-    collaborative_df = joblib.load(r'ai/collaborative_data.pkl')
-    content_df = joblib.load(r'ai/cosine_data.pkl')
+    data = joblib.load(r'\Bookieum_BE\ai\data.pkl')
+    collaborative_df = joblib.load(r'\Bookieum_BE\ai\collaborative_data.pkl')
+    content_df = joblib.load(r'\Bookieum_BE\ai\cosine_data.pkl')
 
     
     # KoNLPy의 Mecab 형태소 분석기 객체 생성
