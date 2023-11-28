@@ -36,7 +36,8 @@ def recommendation(request):
                          
     # 2) AI 책 추천
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
-    
+    print("emotion", emotion)
+    print("book_list", book_list)
     # 3) 추천 책 정보 조회
     
     # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
@@ -46,7 +47,6 @@ def recommendation(request):
  
 
 # AI 로직
-
 def recommend_ai_logic(file_path, text):
     # 영상 관련
         # 루트 경로에 media 폴더 생성해야 함
