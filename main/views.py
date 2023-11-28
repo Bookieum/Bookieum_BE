@@ -5,23 +5,6 @@ from bookieum import models
 from django.core.files.storage import FileSystemStorage  # 파일저장
 import json
 
-#AI
-#pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling
-
-import joblib
-import requests
-import json
-import numpy as np
-import pandas as pd
-import warnings
-warnings.filterwarnings(action = 'ignore')
-from mecab import MeCab
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
-import pandas as pd
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-
 @csrf_exempt
 @require_POST
 def recommendation(request):
@@ -48,6 +31,23 @@ def recommendation(request):
 
 # AI 로직
 def recommend_ai_logic(file_path, text):
+    
+    # 임포트
+    #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling
+    import joblib
+    import requests
+    import json
+    import numpy as np
+    import pandas as pd
+    import warnings
+    warnings.filterwarnings(action = 'ignore')
+    from mecab import MeCab
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
+    import pandas as pd
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
+    
     # 영상 관련
         # 루트 경로에 media 폴더 생성해야 함
         # file_path는 영상 경로 ('/media/파일명')
