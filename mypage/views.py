@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse, JsonResponse
+from django.http.response import JsonResponse
 from bookieum import models
 
 import requests, json
@@ -10,6 +11,8 @@ import datetime as dt
 from pytz import timezone
 
 from django.core import serializers
+
+from django.forms.models import model_to_dict
 
 @csrf_exempt
 @require_POST
@@ -33,11 +36,6 @@ def user_information(request):
         return JsonResponse(error_message, status=400)    
     
 
-    
-    # 마이페이지 로그인 정보 (세션)
-    
-    # user_id = request.session.get('user_id')
-    
     # 세션없이 user_information 부분 구현.
     
     """
@@ -53,9 +51,27 @@ def user_information(request):
     return JsonResponse({'message': 'successfully', 'data': user_list})
     """
   
-    user_list=models.Users.objects.filter(access_token=access_token)
-    user_list=serializers.serialize('json',user_list)
-    return JsonResponse({'message': 'successfully', 'data':user_list})  
+    # user_list=models.Users.objects.filter(access_token=access_token)
+    # print(user_list)
+    # user_list=serializers.serialize('json',user_list)
+    # return JsonResponse({'message': 'successfully', 'data':user_list})  
+   
+    # user_list=user_list[1:-1]
+    # print(user_list)
+
+
+    # 코드 수정    
+    user_list = get_object_or_404(models.Users, access_token=access_token)
+    #user_list.home_addr=None
+    #user_list.save()
+    print(user_list)
+    user_list=model_to_dict(user_list)
+    print(user_list)
+    
+    return JsonResponse({'message': 'successfully', 'data':user_list })  
+    
+    
+    
     
     # user_list = get_object_or_404(models.Users, access_token=access_token)
     #print(user_list)
