@@ -5,6 +5,10 @@ from bookieum import models
 from django.core.files.storage import FileSystemStorage  # 파일저장
 import json
 
+#AI
+#pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling
+
+
 @csrf_exempt
 @require_POST
 def recommendation(request):
@@ -32,8 +36,6 @@ def recommendation(request):
 # AI 로직
 def recommend_ai_logic(file_path, text):
     
-    # 임포트
-    #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling
     import joblib
     import requests
     import json
@@ -46,16 +48,109 @@ def recommend_ai_logic(file_path, text):
     from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
     import pandas as pd
     import numpy as np
-    from sklearn.metrics.pairwise import cosine_similarity
-    
+    import cv2
+    from keras.models import load_model
+    from keras.preprocessing import image
+    import threading
+    import multiprocessing
+    import concurrent.futures
+    from multiprocessing import Process, Queue
+    import tensorflow as tf
+    import os
+    import keyboard
+    import time
     # 영상 관련
         # 루트 경로에 media 폴더 생성해야 함
         # file_path는 영상 경로 ('/media/파일명')
         # 영상 사용 후에 영상 삭제하는 코드 넣어주세요!
         
+        
     # 요청 1. 측정한 감정값을 리턴해주세요! (emotion)
     
     
+    ###################################################################
+    # 얼굴 감정 분석
+    def load_emotion_model(model_path):
+        return load_model(model_path)
+
+    def detect_emotions(video_capture, emotion_model):
+        emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
+        emotion_counts = {label: 0 for label in emotion_labels}
+
+        #4초마다 프레임 캡쳐해서 얼굴 분석함!
+        start_time = time.time()
+        analysis_interval = 4  
+
+        while True:
+            ret, frame = video_capture.read()
+
+            if not ret:
+                break
+
+            current_time = time.time()
+
+            if current_time - start_time >= analysis_interval:
+                start_time = current_time
+
+                labels = []
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                faces = face_classifier.detectMultiScale(gray)
+
+                for (x, y, w, h) in faces:
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 255), 2)
+                    roi_gray = gray[y:y + h, x:x + w]
+                    roi_gray = cv2.resize(roi_gray, (224, 224), interpolation=cv2.INTER_AREA)
+                    roi = cv2.cvtColor(roi_gray, cv2.COLOR_GRAY2RGB)
+                    roi = roi.astype('float') / 255.0
+                    roi = np.expand_dims(roi, axis=0)
+
+                    prediction = emotion_model.predict(roi, verbose=0)[0]
+                    label = emotion_labels[prediction.argmax()]
+                    label_position = (x, y)
+                    cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+                    emotion_counts[label] += 1
+
+                cv2.imshow('Emotion Detector', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                print("No more frames. Exiting loop.")
+                break
+
+        video_capture.release()
+        cv2.destroyAllWindows()
+
+        return emotion_counts
+
+    def calculate_emotion_scores(emotion_counts):
+        positive_emotions = ['Happy', 'Neutral', 'Surprise']
+        negative_emotions = ['Angry', 'Disgust', 'Fear', 'Sad']
+
+        positive_score = sum(emotion_counts[label] for label in positive_emotions)
+        negative_score = sum(emotion_counts[label] for label in negative_emotions)
+
+        total_emotions = sum(emotion_counts.values())
+        positive_normalized = round(positive_score / total_emotions, 7)
+        negative_normalized = round(negative_score / total_emotions, 7)
+        face_sentiment_score = round(positive_normalized * 0.7 + negative_normalized * 0.3, 3)
+        return positive_normalized, negative_normalized, face_sentiment_score
+
+    # Usage example:
+    face_classifier = cv2.CascadeClassifier(r"ai/haarcascade_frontalface_default.xml")
+    emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
+
+    # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
+    video_path = r"video_path"
+    cap = cv2.VideoCapture(video_path)
+
+    emotion_counts = detect_emotions(cap, emotion_model)
+    positive_score, negative_score, face_sentiment_score = calculate_emotion_scores(emotion_counts)
+    
+    #얼굴 감정 분석 결과
+    print(f"face_sentiment_score: {face_sentiment_score:.3f}")
+    
+    
+    ###################################################################
     # 텍스트 감정 분석
     def analyze_sentiment(sentence, client_id, client_secret):
         url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
@@ -100,8 +195,11 @@ def recommend_ai_logic(file_path, text):
     text_result = analyze_sentiment(sentence, client_id, client_secret)
     print(json.dumps(text_result, indent=4, sort_keys=True))
     
-    #####################################################################################
     
+    # 최종 감정 점수
+    emotion_result=round((face_sentiment_score + text_result) / 2.0, 3)
+    
+    #####################################################################################
     # 요청 2. 추천 책들을 리스트로 리턴하게 짜주세요! (book_list)
     
     data = joblib.load(r'ai/data.pkl')
@@ -272,7 +370,7 @@ def recommend_ai_logic(file_path, text):
     # 아래내용부터 입력 들어가서 위 함수들로 책 추천 받는 로직(5권 이전일때 추천, 5권이상일때 추천)
     
     user_name = '글월마야'
-    emotion = text_result
+    emotion = emotion_result
     sentence = text
     user_read = ['9772799628000', '9791198375308']  # 사용자가 읽었던 책 isbn13
 
@@ -339,5 +437,5 @@ def recommend_ai_logic(file_path, text):
     print(book_list_over_five)
     
     # 일단 사용자가 5권 이하를 읽었다고 했을 때 북 추천
-    return text_result, book_list_under_five
+    return emotion_result, book_list_under_five
     
