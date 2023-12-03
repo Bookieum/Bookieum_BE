@@ -52,12 +52,8 @@ def recommend_ai_logic(file_path, text):
     from keras.models import load_model
     from keras.preprocessing import image
     import threading
-    import multiprocessing
-    import concurrent.futures
     from multiprocessing import Process, Queue
     import tensorflow as tf
-    import os
-    import keyboard
     import time
     # 영상 관련
         # 루트 경로에 media 폴더 생성해야 함
@@ -69,17 +65,60 @@ def recommend_ai_logic(file_path, text):
     
     
     ###################################################################
-    # 얼굴 감정 분석
+   # 텍스트 감정 분석 코드
+    def analyze_sentiment(sentence, client_id, client_secret):
+        url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
+        headers = {
+            "X-NCP-APIGW-API-KEY-ID": client_id,
+            "X-NCP-APIGW-API-KEY": client_secret,
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "content": sentence
+        }
+
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+        rescode = response.status_code
+
+        if rescode == 200:
+            result = json.loads(response.text)
+            document = result.get("document")
+            if document:
+                sentiment = document.get("sentiment")
+                confidence = document.get("confidence")
+                if sentiment and confidence:
+                    confidence_neutral = confidence.get("neutral") / 100.0 / 2.0
+                    confidence_positive = confidence.get("positive") / 100.0 + confidence_neutral
+                    confidence_negative = confidence.get("negative") / 100.0 + confidence_neutral
+
+                    text_sentiment_score = confidence_positive * 0.7 + confidence_negative * 0.3
+
+                    return {
+                        "Sentiment": sentiment,
+                        "Positive Confidence": round(confidence_positive, 7),
+                        "Negative Confidence": round(confidence_negative, 7),
+                        "Text Sentiment Score": round(text_sentiment_score, 3)
+                    }
+                else:
+                    return {"error": "Sentiment and Confidence information not found"}
+            else:
+                return {"error": "Document information not found"}
+        else:
+            return {"error": "HTTP Error: " + response.text}
+
+
+    # 얼굴 감정 분석 코드
     def load_emotion_model(model_path):
         return load_model(model_path)
 
-    def detect_emotions(video_capture, emotion_model):
+
+    def detect_emotions(video_capture, emotion_model, face_classifier):
         emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
         emotion_counts = {label: 0 for label in emotion_labels}
 
-        #4초마다 프레임 캡쳐해서 얼굴 분석함!
         start_time = time.time()
-        analysis_interval = 4  
+        analysis_interval = 4  # Analyze frames every 4 seconds
 
         while True:
             ret, frame = video_capture.read()
@@ -111,7 +150,7 @@ def recommend_ai_logic(file_path, text):
 
                     emotion_counts[label] += 1
 
-                cv2.imshow('Emotion Detector', frame)
+                #cv2.imshow('Emotion Detector', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 print("No more frames. Exiting loop.")
@@ -121,6 +160,7 @@ def recommend_ai_logic(file_path, text):
         cv2.destroyAllWindows()
 
         return emotion_counts
+
 
     def calculate_emotion_scores(emotion_counts):
         positive_emotions = ['Happy', 'Neutral', 'Surprise']
@@ -135,70 +175,64 @@ def recommend_ai_logic(file_path, text):
         face_sentiment_score = round(positive_normalized * 0.7 + negative_normalized * 0.3, 3)
         return positive_normalized, negative_normalized, face_sentiment_score
 
-    # Usage example:
-    face_classifier = cv2.CascadeClassifier(r"ai/haarcascade_frontalface_default.xml")
-    emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
 
-    # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
-    video_path = r"video_path"
-    cap = cv2.VideoCapture(video_path)
+    def face_analysis_thread(video_capture, emotion_model,face_classifier,result_queue):
+        emotion_counts = detect_emotions(video_capture, emotion_model, face_classifier)
+        positive_score, negative_score, face_sentiment_score = calculate_emotion_scores(emotion_counts)
+        # print(f"Face Analysis - Positive Score: {positive_score:.3f}")
+        # print(f"Face Analysis - Negative Score: {negative_score:.3f}")
+        #print(f"Face Analysis - Face Sentiment Score: {face_sentiment_score:.3f}")
+        result_queue.put({"face_sentiment_score": face_sentiment_score})
 
-    emotion_counts = detect_emotions(cap, emotion_model)
-    positive_score, negative_score, face_sentiment_score = calculate_emotion_scores(emotion_counts)
-    
-    #얼굴 감정 분석 결과
-    print(f"face_sentiment_score: {face_sentiment_score:.3f}")
-    
-    
-    ###################################################################
-    # 텍스트 감정 분석
-    def analyze_sentiment(sentence, client_id, client_secret):
-        url = "https://naveropenapi.apigw.ntruss.com/sentiment-analysis/v1/analyze"
-        headers = {
-            "X-NCP-APIGW-API-KEY-ID": client_id,
-            "X-NCP-APIGW-API-KEY": client_secret,
-            "Content-Type": "application/json"
-        }
 
-        data = {
-            "content": sentence
-        }
+    def text_analysis_thread(text, result_queue):
+        client_id = "hpgzp4aq0t"
+        client_secret = "frhqiMUgx0HT3j7AtF9fJ9h3w3hqm2w9bX7YRjK5"
+        sentence = text
+        result = analyze_sentiment(sentence, client_id, client_secret)
+        #print("Text Analysis - Results:")
+        # print(json.dumps(result, indent=4, sort_keys=True))
+        result_queue.put({"text_sentiment_score": result["Text Sentiment Score"]})
 
-        response = requests.post(url, data=json.dumps(data), headers=headers)
-        rescode = response.status_code
+    def main(text):
+        # Load face classifier and emotion model
+        face_classifier = cv2.CascadeClassifier(r"ai/haarcascade_frontalface_default.xml")
+        emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
 
-        if rescode == 200:
-            result = json.loads(response.text)
-            document = result.get("document")
-            if document:
-                sentiment = document.get("sentiment")
-                confidence = document.get("confidence")
-                if sentiment and confidence:
-                    confidence_neutral = confidence.get("neutral") / 100.0 / 2.0
-                    confidence_positive = confidence.get("positive") / 100.0 + confidence_neutral
-                    confidence_negative = confidence.get("negative") / 100.0 + confidence_neutral
-                    
-                    text_sentiment_score= confidence_positive*0.7 + confidence_negative*0.3
+        # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
+        video_path = r"video_path"
+        cap = cv2.VideoCapture(video_path)
+        result_queue = Queue()
+        # Create threads for face analysis and text analysis
+        face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
+        text_thread = threading.Thread(target=text_analysis_thread, args=(text,result_queue))
 
-                    return round(text_sentiment_score, 3)
-                else:
-                    return {"error": "Sentiment and Confidence information not found"}
-            else:
-                return {"error": "Document information not found"}
-        else:
-            return {"error": "HTTP Error: " + response.text}
-    client_id = "hpgzp4aq0t"
-    client_secret = "frhqiMUgx0HT3j7AtF9fJ9h3w3hqm2w9bX7YRjK5"
-    sentence = text
-    
-    # 텍스트 감정 결과
-    text_result = analyze_sentiment(sentence, client_id, client_secret)
-    print(json.dumps(text_result, indent=4, sort_keys=True))
-    
-    
-    # 최종 감정 점수
-    emotion_result=round((face_sentiment_score + text_result) / 2.0, 3)
-    
+        # Start both threads
+        face_thread.start()
+        text_thread.start()
+
+        # Wait for both threads to finish
+        face_thread.join()
+        text_thread.join()
+
+        # Release video capture
+        cap.release()
+        cv2.destroyAllWindows()
+
+        # Retrieve results from the Queue
+        results = {"face_sentiment_score": None, "text_sentiment_score": None}
+        while not result_queue.empty():
+            result = result_queue.get()
+            results.update(result)
+
+        # Calculate average sentiment scores
+        average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"]) / 2.0
+
+        # Print the results
+        print(f"Average Sentiment Score: {average_sentiment:.3f}")
+        return average_sentiment
+
+    emotion_result= main(text)
     #####################################################################################
     # 요청 2. 추천 책들을 리스트로 리턴하게 짜주세요! (book_list)
     
