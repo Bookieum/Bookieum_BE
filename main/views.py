@@ -6,7 +6,7 @@ from django.core.files.storage import FileSystemStorage  # 파일저장
 import json
 
 #AI
-#pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling
+#pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling joblib requests numpy  scikit-learn opencv-python keras tensorflow
 
 
 @csrf_exempt
@@ -46,14 +46,10 @@ def recommend_ai_logic(file_path, text):
     from mecab import MeCab
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
-    import pandas as pd
-    import numpy as np
     import cv2
     from keras.models import load_model
-    from keras.preprocessing import image
     import threading
-    from multiprocessing import Process, Queue
-    import tensorflow as tf
+    from multiprocessing import Queue
     import time
     # 영상 관련
         # 루트 경로에 media 폴더 생성해야 함
