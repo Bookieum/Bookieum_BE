@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     # my app
     'bookieum',
     'kakao',
-    'google',
+    'google2',
     'naver',
     'logout',
     'main',

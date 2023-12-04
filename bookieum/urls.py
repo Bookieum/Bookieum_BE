@@ -7,7 +7,7 @@ from django.urls import re_path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('kakao/', include('kakao.urls')),
-    path('google/', include('google.urls')),
+    path('google2/', include('google2.urls')),
     path('naver/', include('naver.urls')),
     path('logout/', include('logout.urls')),
     path('main/', include('main.urls')),

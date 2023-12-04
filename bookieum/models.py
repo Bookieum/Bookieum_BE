@@ -1,32 +1,51 @@
 from django.db import models
 
 
-class Answer(models.Model):
-    answer_id = models.CharField(primary_key=True, max_length=20)
-    question_id = models.CharField(max_length=20)
-    user_id = models.CharField(max_length=20)
-    answer_content = models.CharField(max_length=20)
-    answer_datetime = models.DateTimeField()
+class Users(models.Model):
+    user_id = models.CharField(primary_key=True, max_length=50)
+    user_name = models.CharField(max_length=20)
+    reading_level = models.IntegerField()
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    home_addr = models.CharField(max_length=50, blank=True, null=True)
+    register_datetime = models.DateTimeField()
+    share_cnt = models.IntegerField()
+    access_token = models.CharField(max_length=300, blank=True, null=True)
+    survey = models.CharField(max_length=5, default=False)
+    genre = models.CharField(max_length=200, blank=True, null=True)
+    mood = models.CharField(max_length=200, blank=True, null=True)
+    interest = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'Answer'
+        db_table = 'Users'
+        
 
-
-class Question(models.Model):
-    question_id = models.CharField(max_length=20)
-    question_content = models.CharField(max_length=20, blank=True, null=True)
-    question_type = models.CharField(max_length=10, blank=True, null=True)
+class Books(models.Model):
+    isbn_id = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    author = models.CharField(max_length=255, blank=True, null=True)
+    publisher = models.CharField(max_length=255, blank=True, null=True)
+    pub_date = models.CharField(max_length=255, blank=True, null=True)
+    category_id = models.IntegerField(blank=True, null=True)
+    category_name = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    cover = models.CharField(max_length=255, blank=True, null=True)
+    page_num = models.IntegerField(blank=True, null=True)
+    keyword = models.CharField(db_column='Keyword', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    genres = models.CharField(max_length=255, blank=True, null=True)
+    mood = models.CharField(max_length=255, blank=True, null=True)
+    interest = models.CharField(max_length=255, blank=True, null=True)
+    emotion_score = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'Question'
-
+        db_table = 'books'
+        
 
 class Recommend(models.Model):
-    recommend_id = models.CharField(primary_key=True, max_length=20)
-    user_id = models.CharField(max_length=20)
-    recommend_datetime = models.DateTimeField()
+    recommend_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(Users, on_delete=models.Case)
+    recommend_datetime = models.DateTimeField(auto_now_add=True)
     emotion = models.CharField(max_length=20)
     answer_content = models.CharField(max_length=100)
 
@@ -36,12 +55,12 @@ class Recommend(models.Model):
 
 
 class RecommendBooks(models.Model):
-    mybook_id = models.CharField(primary_key=True, max_length=20)
-    isbn_id = models.CharField(max_length=20)
-    recommend_id = models.CharField(max_length=20)
-    user_id = models.CharField(max_length=20)
+    mybook_id = models.AutoField(primary_key=True)
+    isbn = models.ForeignKey(Books, on_delete=models.Case)
+    recommend = models.ForeignKey(Recommend, on_delete=models.Case)
+    user = models.ForeignKey(Users, on_delete=models.Case)
     is_selected = models.IntegerField()
-    created_datetime = models.DateTimeField()
+    created_datetime = models.DateTimeField(auto_now_add=True)
     reading_datetime = models.DateTimeField(blank=True, null=True)
     curr_page = models.IntegerField(blank=True, null=True)
     is_completed = models.IntegerField()
@@ -52,10 +71,10 @@ class RecommendBooks(models.Model):
 
 
 class RegisterBooks(models.Model):
-    register_id = models.CharField(primary_key=True, max_length=20)
-    user_id = models.CharField(max_length=20)
-    isbn_id = models.CharField(max_length=20)
-    register_datetime = models.DateTimeField()
+    register_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(Users, on_delete=models.Case)
+    isbn = models.ForeignKey(Books, on_delete=models.Case)
+    register_datetime = models.DateTimeField(auto_now_add=True)
     reading_datetime = models.DateTimeField(blank=True, null=True)
     curr_page = models.IntegerField()
     is_completed = models.IntegerField(blank=True, null=True)
@@ -75,25 +94,6 @@ class Review(models.Model):
     class Meta:
         managed = False
         db_table = 'Review'
-
-
-class Users(models.Model):
-    user_id = models.CharField(primary_key=True, max_length=50)
-    user_name = models.CharField(max_length=20)
-    reading_level = models.IntegerField()
-    gender = models.CharField(max_length=10, blank=True, null=True)
-    home_addr = models.CharField(max_length=50, blank=True, null=True)
-    register_datetime = models.DateTimeField()
-    share_cnt = models.IntegerField()
-    access_token = models.CharField(max_length=300, blank=True, null=True)
-    survey = models.CharField(max_length=5, default=False)
-    genre = models.CharField(max_length=200, blank=True, null=True)
-    mood = models.CharField(max_length=200, blank=True, null=True)
-    interest = models.CharField(max_length=200, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'Users'
 
 
 class AuthGroup(models.Model):
@@ -170,28 +170,6 @@ class AuthUserUserPermissions(models.Model):
         managed = False
         db_table = 'auth_user_user_permissions'
         unique_together = (('user', 'permission'),)
-
-
-class Books(models.Model):
-    isbn_id = models.CharField(max_length=255, blank=True, null=True)
-    title = models.CharField(max_length=255, blank=True, null=True)
-    author = models.CharField(max_length=255, blank=True, null=True)
-    publisher = models.CharField(max_length=255, blank=True, null=True)
-    pub_date = models.CharField(max_length=255, blank=True, null=True)
-    category_id = models.IntegerField(blank=True, null=True)
-    category_name = models.CharField(max_length=255, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    cover = models.CharField(max_length=255, blank=True, null=True)
-    page_num = models.IntegerField(blank=True, null=True)
-    keyword = models.CharField(db_column='Keyword', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    genres = models.CharField(max_length=255, blank=True, null=True)
-    mood = models.CharField(max_length=255, blank=True, null=True)
-    interest = models.CharField(max_length=255, blank=True, null=True)
-    emotion_score = models.FloatField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'books'
 
 
 class DjangoAdminLog(models.Model):

@@ -23,9 +23,9 @@ def recommendation(request):
                          
     # 2) AI 책 추천
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
-    print("emotion", emotion)
-    print("book_list", book_list)
+
     # 3) 추천 책 정보 조회
+    
     
     # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
     
