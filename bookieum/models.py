@@ -21,11 +21,11 @@ class Users(models.Model):
         
 
 class Books(models.Model):
-    isbn_id = models.CharField(max_length=255, blank=True, null=True)
+    isbn_id = models.CharField(primary_key=True, max_length=255)
     title = models.CharField(max_length=255, blank=True, null=True)
     author = models.CharField(max_length=255, blank=True, null=True)
     publisher = models.CharField(max_length=255, blank=True, null=True)
-    pub_date = models.CharField(max_length=255, blank=True, null=True)
+    pub_date = models.DateTimeField(blank=True, null=True)
     category_id = models.IntegerField(blank=True, null=True)
     category_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True, null=True)
@@ -39,7 +39,7 @@ class Books(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'books'
+        db_table = 'Books'
         
 
 class Recommend(models.Model):
@@ -59,11 +59,11 @@ class RecommendBooks(models.Model):
     isbn = models.ForeignKey(Books, on_delete=models.Case)
     recommend = models.ForeignKey(Recommend, on_delete=models.Case)
     user = models.ForeignKey(Users, on_delete=models.Case)
-    is_selected = models.IntegerField()
+    is_selected = models.IntegerField(default=0)
     created_datetime = models.DateTimeField(auto_now_add=True)
     reading_datetime = models.DateTimeField(blank=True, null=True)
     curr_page = models.IntegerField(blank=True, null=True)
-    is_completed = models.IntegerField()
+    is_completed = models.IntegerField(default=0)
 
     class Meta:
         managed = False

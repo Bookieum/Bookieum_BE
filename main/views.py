@@ -20,17 +20,46 @@ def recommendation(request):
     fs.save(file_name, uploaded_file)
     # 텍스트 불러오기
     text = request.POST.get('text', '')
+    # 유저 정보 불러오기
+    access_token = request.POST.get('access_token', '')
+    if models.Users.objects.filter(access_token=access_token).exists():
+        user = models.Users.objects.get(access_token=access_token)
+    else:
+        return JsonResponse({'message': 'Not Found User'})
                          
     # 2) AI 책 추천
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
 
-    # 3) 추천 책 정보 조회
+    # 3) 추천 내역 및 추천 도서 리스트 DB에 저장
+    recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
+    recommend_books = []
+    
+    if recommend_list.exists():
+        # Recommend
+        recommend = models.Recommend.objects.create(
+            user = user,
+            emotion = emotion,
+            answer_content = text
+        )
+        recommend_info = {'recommend_id': recommend.recommend_id, 'pos_emotion': emotion*100, 'neg_emotion': round((1-emotion)*100, 1)}
+        
+        # Recommend_books
+        for rec in recommend_list:
+            mybook = models.RecommendBooks.objects.create(
+                isbn = models.Books.objects.get(isbn_id=rec.isbn_id),
+                recommend = recommend,
+                user = user
+            )
+            
+            recommend_books.append({'mybook_id': mybook.mybook_id, 'isbn_id': rec.isbn_id, 'title': rec.title, 'author': rec.author,
+                                    'publisher': rec.publisher, 'pub_date': rec.pub_date, 'category_name': rec.category_name, 
+                                    'cover': rec.cover, 'description': rec.description, 'page_num': rec.page_num})
+            
+    else:
+        return JsonResponse({'message': 'Not Found Recommend Books'})
     
     
-    # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
-    
-    # return JsonResponse({'message': 'successfully', 'data': '[책 정보들 리스트]'})
-    return JsonResponse({'message': 'successfully', 'data': {'text': text}})
+    return JsonResponse({'message': 'successfully', 'data': {'recommend_info': recommend_info, 'recommend_books': recommend_books}})
  
 
 # AI 로직
@@ -200,15 +229,15 @@ def recommend_ai_logic(file_path, text):
         cap = cv2.VideoCapture(video_path)
         result_queue = Queue()
         # Create threads for face analysis and text analysis
-        face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
+        # face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
         text_thread = threading.Thread(target=text_analysis_thread, args=(text,result_queue))
 
         # Start both threads
-        face_thread.start()
+        # face_thread.start()
         text_thread.start()
 
         # Wait for both threads to finish
-        face_thread.join()
+        # face_thread.join()
         text_thread.join()
 
         # Release video capture
@@ -222,7 +251,8 @@ def recommend_ai_logic(file_path, text):
             results.update(result)
 
         # Calculate average sentiment scores
-        average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"]) / 2.0
+        # average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"]) / 2.0
+        average_sentiment = results["text_sentiment_score"]
 
         # Print the results
         print(f"Average Sentiment Score: {average_sentiment:.3f}")
