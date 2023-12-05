@@ -139,8 +139,8 @@ def recommend_ai_logic(file_path, text):
 
 
     # 얼굴 감정 분석 코드
-    def load_emotion_model(model_path):
-        return load_model(model_path)
+    # def load_emotion_model(model_path):
+    #     return load_model(model_path)
 
 
     def detect_emotions(video_capture, emotion_model, face_classifier):
@@ -227,7 +227,7 @@ def recommend_ai_logic(file_path, text):
     def main(text):
         # Load face classifier and emotion model
         face_classifier = cv2.CascadeClassifier(r"ai/haarcascade_frontalface_default.xml")
-        emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
+        # emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
 
         # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
         video_path = r"ai/test.mp4"
