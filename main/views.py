@@ -15,10 +15,10 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 def recommendation(request):
     # 1) 데이터 불러오기
     # 비디오 저장
-    # uploaded_file = request.FILES['video']
-    # file_name = uploaded_file.name
-    # fs = FileSystemStorage()
-    # fs.save(file_name, uploaded_file)
+    uploaded_file = request.FILES['video']
+    file_name = uploaded_file.name
+    fs = FileSystemStorage()
+    fs.save(file_name, uploaded_file)
     # 텍스트 불러오기
     text = '오늘 기분 좋아'
     request.POST.get('text', '')
@@ -30,7 +30,7 @@ def recommendation(request):
         return JsonResponse({'message': 'Not Found User'})
                          
     # 2) AI 책 추천
-    emotion, book_list = recommend_ai_logic(text)
+    emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
 
     # 3) 추천 내역 및 추천 도서 리스트 DB에 저장
     recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
@@ -65,7 +65,7 @@ def recommendation(request):
  
 
 # AI 로직
-def recommend_ai_logic(text):
+def recommend_ai_logic(file_path, text):
     
     import joblib
     import requests
