@@ -234,15 +234,15 @@ def recommend_ai_logic(file_path, text):
         cap = cv2.VideoCapture(video_path)
         result_queue = Queue()
         # Create threads for face analysis and text analysis
-        face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
+        # face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
         text_thread = threading.Thread(target=text_analysis_thread, args=(text,result_queue))
 
         # Start both threads
-        face_thread.start()
+        # face_thread.start()
         text_thread.start()
 
         # Wait for both threads to finish
-        face_thread.join()
+        # face_thread.join()
         text_thread.join()
 
         # Release video capture
@@ -256,7 +256,8 @@ def recommend_ai_logic(file_path, text):
             results.update(result)
 
         # Calculate average sentiment scores
-        average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"])/2.0
+        average_sentiment = results["text_sentiment_score"]
+        # average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"])/2.0
 
         # Print the results
         print(f"Average Sentiment Score: {average_sentiment:.3f}")
