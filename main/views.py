@@ -67,6 +67,9 @@ def recommendation(request):
 # AI 로직
 def recommend_ai_logic(file_path, text):
     
+    import tensorflow as tf
+    tf.config.experimental.list_physical_devices('GPU')
+    
     import joblib
     import requests
     import json
