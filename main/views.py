@@ -4,7 +4,8 @@ from django.views.decorators.http import require_POST
 from bookieum import models
 from django.core.files.storage import FileSystemStorage  # 파일저장
 import json
-
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 #AI
 #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling joblib requests numpy  scikit-learn opencv-python keras tensorflow
 
@@ -14,12 +15,13 @@ import json
 def recommendation(request):
     # 1) 데이터 불러오기
     # 비디오 저장
-    uploaded_file = request.FILES['video']
-    file_name = uploaded_file.name
-    fs = FileSystemStorage()
-    fs.save(file_name, uploaded_file)
+    # uploaded_file = request.FILES['video']
+    # file_name = uploaded_file.name
+    # fs = FileSystemStorage()
+    # fs.save(file_name, uploaded_file)
     # 텍스트 불러오기
-    text = request.POST.get('text', '')
+    text = '오늘 기분 좋아'
+    request.POST.get('text', '')
     # 유저 정보 불러오기
     access_token = request.POST.get('access_token', '')
     if models.Users.objects.filter(access_token=access_token).exists():
@@ -28,7 +30,7 @@ def recommendation(request):
         return JsonResponse({'message': 'Not Found User'})
                          
     # 2) AI 책 추천
-    emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
+    emotion, book_list = recommend_ai_logic(text)
 
     # 3) 추천 내역 및 추천 도서 리스트 DB에 저장
     recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
@@ -63,7 +65,7 @@ def recommendation(request):
  
 
 # AI 로직
-def recommend_ai_logic(file_path, text):
+def recommend_ai_logic(text):
     
     import joblib
     import requests
@@ -216,7 +218,7 @@ def recommend_ai_logic(file_path, text):
         sentence = text
         result = analyze_sentiment(sentence, client_id, client_secret)
         #print("Text Analysis - Results:")
-        # print(json.dumps(result, indent=4, sort_keys=True))
+        #print(json.dumps(result, indent=4, sort_keys=True))
         result_queue.put({"text_sentiment_score": result["Text Sentiment Score"]})
 
     def main(text):
@@ -225,19 +227,19 @@ def recommend_ai_logic(file_path, text):
         emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
 
         # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
-        video_path = r"video_path"
+        video_path = r"ai/test.mp4"
         cap = cv2.VideoCapture(video_path)
         result_queue = Queue()
         # Create threads for face analysis and text analysis
-        # face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
+        face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
         text_thread = threading.Thread(target=text_analysis_thread, args=(text,result_queue))
 
         # Start both threads
-        # face_thread.start()
+        face_thread.start()
         text_thread.start()
 
         # Wait for both threads to finish
-        # face_thread.join()
+        face_thread.join()
         text_thread.join()
 
         # Release video capture
@@ -251,8 +253,7 @@ def recommend_ai_logic(file_path, text):
             results.update(result)
 
         # Calculate average sentiment scores
-        # average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"]) / 2.0
-        average_sentiment = results["text_sentiment_score"]
+        average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"])/2.0
 
         # Print the results
         print(f"Average Sentiment Score: {average_sentiment:.3f}")
