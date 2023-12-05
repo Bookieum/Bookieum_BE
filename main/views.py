@@ -20,19 +20,19 @@ def recommendation(request):
     fs = FileSystemStorage()
     fs.save(file_name, uploaded_file)
     # 텍스트 불러오기
-    text = '오늘 기분 좋아'
-    request.POST.get('text', '')
-    # 유저 정보 불러오기
+    text = request.POST.get('text', '')
+    
+    # 2) 유저 정보 불러오기
     access_token = request.POST.get('access_token', '')
     if models.Users.objects.filter(access_token=access_token).exists():
         user = models.Users.objects.get(access_token=access_token)
     else:
         return JsonResponse({'message': 'Not Found User'})
                          
-    # 2) AI 책 추천
+    # 3) AI 책 추천
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
 
-    # 3) 추천 내역 및 추천 도서 리스트 DB에 저장
+    # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
     recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
     recommend_books = []
     
@@ -60,6 +60,7 @@ def recommendation(request):
     else:
         return JsonResponse({'message': 'Not Found Recommend Books'})
     
+    # print({'recommend_info': recommend_info, 'recommend_books': recommend_books})
     
     return JsonResponse({'message': 'successfully', 'data': {'recommend_info': recommend_info, 'recommend_books': recommend_books}})
  
