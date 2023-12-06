@@ -213,7 +213,7 @@ def recommend_ai_logic(file_path, text, user_id):
         negative_score = sum(emotion_counts[label] for label in negative_emotions)
 
         total_emotions = sum(emotion_counts.values())
-        total_emotions = 1 if total_emotions == 0 else total_emotions
+        total_emotions = 1e9 if total_emotions == 0 else total_emotions
         positive_normalized = round(positive_score / total_emotions, 7)
         negative_normalized = round(negative_score / total_emotions, 7)
         face_sentiment_score = round(positive_normalized * 0.7 + negative_normalized * 0.3, 3)
