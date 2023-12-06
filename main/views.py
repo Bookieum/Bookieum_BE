@@ -140,8 +140,8 @@ def recommend_ai_logic(file_path, text):
 
 
     # 얼굴 감정 분석 코드
-    # def load_emotion_model(model_path):
-    #     return load_model(model_path)
+    def load_emotion_model(model_path):
+        return load_model(model_path)
 
 
     def detect_emotions(video_capture, emotion_model, face_classifier):
@@ -228,22 +228,22 @@ def recommend_ai_logic(file_path, text):
     def main(text):
         # Load face classifier and emotion model
         face_classifier = cv2.CascadeClassifier(r"ai/haarcascade_frontalface_default.xml")
-        # emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
+        emotion_model = load_emotion_model(r"ai/Emotion_Detection.h5")
 
         # 비디오 파일 저장 후 경로 설정 해줘야함!!!!!!!!
         video_path = r"ai/test.mp4"
         cap = cv2.VideoCapture(video_path)
         result_queue = Queue()
         # Create threads for face analysis and text analysis
-        # face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
+        face_thread = threading.Thread(target=face_analysis_thread, args=(cap, emotion_model,face_classifier,result_queue))
         text_thread = threading.Thread(target=text_analysis_thread, args=(text,result_queue))
 
         # Start both threads
-        # face_thread.start()
+        face_thread.start()
         text_thread.start()
 
         # Wait for both threads to finish
-        # face_thread.join()
+        face_thread.join()
         text_thread.join()
 
         # Release video capture
@@ -257,8 +257,8 @@ def recommend_ai_logic(file_path, text):
             results.update(result)
 
         # Calculate average sentiment scores
-        average_sentiment = results["text_sentiment_score"]
-        # average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"])/2.0
+        #average_sentiment = results["text_sentiment_score"]
+        average_sentiment = (results["face_sentiment_score"] + results["text_sentiment_score"])/2.0
 
         # Print the results
         print(f"Average Sentiment Score: {average_sentiment:.3f}")
@@ -405,33 +405,33 @@ def recommend_ai_logic(file_path, text):
     user_book_rating = collaborative_df.pivot_table(index='nickname', columns='isbn_id', values='rating').fillna(0)
 
     # 코사인 유사도 계산
-    user_similarity = cosine_similarity(user_book_rating)
-    user_similarity_df = pd.DataFrame(user_similarity, index=user_book_rating.index, columns=user_book_rating.index)
+    #user_similarity = cosine_similarity(user_book_rating)
+    #user_similarity_df = pd.DataFrame(user_similarity, index=user_book_rating.index, columns=user_book_rating.index)
 
-    def get_user_recommendations(target_user):
-        similar_users = user_similarity_df[target_user]
+    # def get_user_recommendations(target_user):
+    #     similar_users = user_similarity_df[target_user]
 
-        # 유사도 순으로 정렬
-        similar_users = similar_users.sort_values(ascending=False)
+    #     # 유사도 순으로 정렬
+    #     similar_users = similar_users.sort_values(ascending=False)
 
-        # 타겟 사용자의 평점을 가져옴
-        user1_ratings = user_book_rating.loc[target_user, :]
+    #     # 타겟 사용자의 평점을 가져옴
+    #     user1_ratings = user_book_rating.loc[target_user, :]
 
-        # 가장 유사한 사용자의 리스트를 순회
-        for user in similar_users.index[1:6]:
-            # 각 사용자의 평점을 가져옴
-            user2_ratings = user_book_rating.loc[user, :]
+    #     # 가장 유사한 사용자의 리스트를 순회
+    #     for user in similar_users.index[1:6]:
+    #         # 각 사용자의 평점을 가져옴
+    #         user2_ratings = user_book_rating.loc[user, :]
 
-            # 타겟 사용자가 평가하지 않은 책 중, 평점이 3 이상인 책만 추천
-            recommendations = user2_ratings[(user1_ratings == 0) & (user2_ratings >= 3)]
+    #         # 타겟 사용자가 평가하지 않은 책 중, 평점이 3 이상인 책만 추천
+    #         recommendations = user2_ratings[(user1_ratings == 0) & (user2_ratings >= 3)]
 
-            # 만약 추천할 책이 있다면 반환
-            if not recommendations.empty:
-                # Series를 list로 변환, 평점을 제외하고 책의 ID만 반환
-                return [item[0] for item in recommendations.sort_values(ascending=False).items()][:10]
+    #         # 만약 추천할 책이 있다면 반환
+    #         if not recommendations.empty:
+    #             # Series를 list로 변환, 평점을 제외하고 책의 ID만 반환
+    #             return [item[0] for item in recommendations.sort_values(ascending=False).items()][:10]
 
-        # 모든 사용자를 순회했음에도 추천할 책이 없다면 빈 리스트 반환
-        return []
+    #     # 모든 사용자를 순회했음에도 추천할 책이 없다면 빈 리스트 반환
+    #     return []
 
     # 아래내용부터 입력 들어가서 위 함수들로 책 추천 받는 로직(5권 이전일때 추천, 5권이상일때 추천)
     
@@ -472,35 +472,35 @@ def recommend_ai_logic(file_path, text):
     # 사용자가 읽었던 책 중 가장 평점이 높은 책
     user_prefer_isbn = '9791198173898'
 
-    def recommend_books_over_five_reviews(sentence, user_name, user_read, user_prefer_isbn, emotion):
-        # 문장에 대해 컨텐츠 기반 필터링
-        isbn_list_by_sentence = recommend_books_based_on_sentence(sentence, user_read)
+    # def recommend_books_over_five_reviews(sentence, user_name, user_read, user_prefer_isbn, emotion):
+    #     # 문장에 대해 컨텐츠 기반 필터링
+    #     isbn_list_by_sentence = recommend_books_based_on_sentence(sentence, user_read)
 
-        # 사용자 리뷰 데이터 기반 책 추천
-        isbn_list_by_review = get_user_recommendations(user_name)
+    #     # 사용자 리뷰 데이터 기반 책 추천
+    #     isbn_list_by_review = get_user_recommendations(user_name)
 
-        # isbn_list_by_review이 10권 이하라면,
-        # 사용자 선호 도서 기반 책 추천을 통해 10권이 되도록 책 리스트를 추가
-        if len(isbn_list_by_review) < 10:
-            more_isbn = 10 - len(isbn_list_by_review)
-            isbn_list_by_book = recommend_books_based_on_book(user_prefer_isbn, user_read, more_isbn)
-        else:
-            isbn_list_by_book = []
+    #     # isbn_list_by_review이 10권 이하라면,
+    #     # 사용자 선호 도서 기반 책 추천을 통해 10권이 되도록 책 리스트를 추가
+    #     if len(isbn_list_by_review) < 10:
+    #         more_isbn = 10 - len(isbn_list_by_review)
+    #         isbn_list_by_book = recommend_books_based_on_book(user_prefer_isbn, user_read, more_isbn)
+    #     else:
+    #         isbn_list_by_book = []
 
-        # 세 리스트를 합치고 중복 제거
-        isbn_list = list(set(isbn_list_by_sentence + isbn_list_by_review + isbn_list_by_book))
+    #     # 세 리스트를 합치고 중복 제거
+    #     isbn_list = list(set(isbn_list_by_sentence + isbn_list_by_review + isbn_list_by_book))
 
-        # 각 isbn에 대한 감성 점수의 차이 계산
-        isbn_with_emotion_diff = [(isbn, abs(data[data['isbn_id'] == isbn]['emotion_score'].values[0] - emotion)) for isbn in isbn_list]
+    #     # 각 isbn에 대한 감성 점수의 차이 계산
+    #     isbn_with_emotion_diff = [(isbn, abs(data[data['isbn_id'] == isbn]['emotion_score'].values[0] - emotion)) for isbn in isbn_list]
 
-        # 감성 점수의 차이가 최소인 순서로 정렬
-        isbn_with_emotion_diff_sorted = sorted(isbn_with_emotion_diff, key=lambda x: x[1])
+    #     # 감성 점수의 차이가 최소인 순서로 정렬
+    #     isbn_with_emotion_diff_sorted = sorted(isbn_with_emotion_diff, key=lambda x: x[1])
 
-        # 차이가 가장 적은 상위 3권의 isbn 반환
-        return [isbn for isbn, diff in isbn_with_emotion_diff_sorted[:3]]
+    #     # 차이가 가장 적은 상위 3권의 isbn 반환
+    #     return [isbn for isbn, diff in isbn_with_emotion_diff_sorted[:3]]
 
-    book_list_over_five=recommend_books_over_five_reviews(sentence, user_name, user_read, user_prefer_isbn, emotion)
-    print(book_list_over_five)
+    #book_list_over_five=recommend_books_over_five_reviews(sentence, user_name, user_read, user_prefer_isbn, emotion)
+    #print(book_list_over_five)
     
     # 일단 사용자가 5권 이하를 읽었다고 했을 때 북 추천
     return emotion_result, book_list_under_five
