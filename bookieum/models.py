@@ -86,10 +86,10 @@ class RegisterBooks(models.Model):
 
 class Review(models.Model):
     review_id = models.CharField(primary_key=True, max_length=20)
-    user_id = models.CharField(max_length=20)
+    user = models.ForeignKey(Users, on_delete=models.Case)
     review_content = models.CharField(max_length=200, blank=True, null=True)
     satisfied = models.IntegerField(db_column='Satisfied')  # Field name made lowercase.
-    created_datetime = models.DateTimeField()
+    created_datetime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = False
