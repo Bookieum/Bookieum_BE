@@ -103,13 +103,6 @@ class AuthGroup(models.Model):
         managed = False
         db_table = 'auth_group'
 
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
 
 class AuthGroupPermissions(models.Model):
     id = models.BigAutoField(primary_key=True)

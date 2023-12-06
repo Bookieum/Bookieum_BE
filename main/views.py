@@ -10,6 +10,18 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling joblib requests numpy  scikit-learn opencv-python keras tensorflow
 
 
+# 사용자 선호 데이터 추출
+def find_user_data(user_id):
+    user = models.Users.objects.get(user_id=user_id)
+    return {'genres': user.genre, 'mood': user.mood, 'interest': user.interest}
+
+
+# 사용자 책 추천 내역 추출
+def find_history_books(user_id):
+    books = models.RecommendBooks.objects.filter(user_id=user_id)
+    return list(books.values_list('isbn_id', flat=True))
+
+
 @csrf_exempt
 @require_POST
 def recommendation(request):
@@ -30,7 +42,7 @@ def recommendation(request):
         return JsonResponse({'message': 'Not Found User'})
                          
     # 3) AI 책 추천
-    emotion, book_list = recommend_ai_logic('/media/'+file_name, text)
+    emotion, book_list = recommend_ai_logic('/media/'+file_name, text, user.user_id)
 
     # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
     recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
@@ -66,7 +78,7 @@ def recommendation(request):
  
 
 # AI 로직
-def recommend_ai_logic(file_path, text):
+def recommend_ai_logic(file_path, text, user_id):
     
     import tensorflow as tf
     tf.config.experimental.list_physical_devices('GPU')
@@ -435,15 +447,16 @@ def recommend_ai_logic(file_path, text):
 
     # 아래내용부터 입력 들어가서 위 함수들로 책 추천 받는 로직(5권 이전일때 추천, 5권이상일때 추천)
     
-    user_name = '글월마야'
+    # user_name = '글월마야'
     emotion = emotion_result
     sentence = text
-    user_read = ['9772799628000', '9791198375308']  # 사용자가 읽었던 책 isbn13
-
+    user_read = find_history_books(user_id)  # 사용자가 읽었던 책 isbn13
+    
     # 사용자의 선호장르
-    genres = ['시대', '전쟁', '과학']
-    mood = ['열정', '도전']
-    interest = ['영화', '생각', '성공', '심리', '동물', '시간', '사진', '여행', '인간', '시', '그림', '미술']
+    user_data = find_user_data(user_id)
+    genres = user_data['genres']
+    mood = user_data['mood']
+    interest = user_data['interest']
 
     # 사용자 리뷰 데이터 5권 전
 
@@ -470,7 +483,7 @@ def recommend_ai_logic(file_path, text):
     # 사용지 리뷰 데이터 5권 이상
 
     # 사용자가 읽었던 책 중 가장 평점이 높은 책
-    user_prefer_isbn = '9791198173898'
+    # user_prefer_isbn = '9791198173898' 
 
     # def recommend_books_over_five_reviews(sentence, user_name, user_read, user_prefer_isbn, emotion):
     #     # 문장에 대해 컨텐츠 기반 필터링
