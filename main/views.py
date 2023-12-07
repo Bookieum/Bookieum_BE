@@ -10,6 +10,29 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling joblib requests numpy  scikit-learn opencv-python keras tensorflow
 
 
+# 추천 아이디에 따른 책 결과 보내주기
+# def rec_result(request):
+#     # 데이터 받아오기
+#     try:
+#         data = json.loads(request.body.decode('utf-8'))
+#     except json.JSONDecodeError as e:
+#         # JSON 디코딩 중에 오류가 발생한 경우
+#         error_message = {'message': 'Invalid JSON format'}
+#         return JsonResponse(error_message, status=400)
+#     if not data:
+#         error_message = {'message': '데이터를 받아오지 못했습니다.'}
+#         return JsonResponse(error_message, status=400)
+    
+#     # recommend_id 추출
+#     recommend_id = data["recommend_id"]
+#     if not recommend_id:
+#         error_message = {'message': 'recommend_id를 받아오지 못했습니다.'}
+#         return JsonResponse(error_message, status=400)
+#     books = models.Recommend.objects.get(recommend_id=recommend_id)
+#     result = {}
+#     return JsonResponse(result)
+
+
 # 사용자 선호 데이터 추출
 def find_user_data(user_id):
     user = models.Users.objects.get(user_id=user_id)
@@ -28,25 +51,36 @@ def recommendation(request):
     # 1) 데이터 불러오기
     # 비디오 저장
     uploaded_file = request.FILES['video']
+    if not uploaded_file:
+        return JsonResponse({'message': 'video를 받아오지 못했습니다.'})
     file_name = uploaded_file.name
     fs = FileSystemStorage()
     fs.save(file_name, uploaded_file)
     # 텍스트 불러오기
     text = request.POST.get('text', '')
+    if text == "":
+        return JsonResponse({'message': 'text를 받아오지 못했습니다.'})
+    print("video:", uploaded_file)
+    print("text:", text)
     
     # 2) 유저 정보 불러오기
     access_token = request.POST.get('access_token', '')
+    if access_token == '':
+        return JsonResponse({'message': 'access token을 받아오지 못했습니다.'})
     if models.Users.objects.filter(access_token=access_token).exists():
         user = models.Users.objects.get(access_token=access_token)
+    elif user.survey == 'False':
+        return JsonResponse({'message': '설문조사에 응하지 않은 사용자입니다.'})
     else:
         return JsonResponse({'message': 'Not Found User'})
                          
     # 3) AI 책 추천
+    print(user.user_id)
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text, user.user_id)
 
     # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
     recommend_list = models.Books.objects.filter(isbn_id__in=book_list)
-    recommend_books = []
+    # recommend_books = []
     
     if recommend_list.exists():
         # Recommend
@@ -65,16 +99,16 @@ def recommendation(request):
                 user = user
             )
             
-            recommend_books.append({'mybook_id': mybook.mybook_id, 'isbn_id': rec.isbn_id, 'title': rec.title, 'author': rec.author,
-                                    'publisher': rec.publisher, 'pub_date': rec.pub_date, 'category_name': rec.category_name, 
-                                    'cover': rec.cover, 'description': rec.description, 'page_num': rec.page_num})
+            # recommend_books.append({'mybook_id': mybook.mybook_id, 'isbn_id': rec.isbn_id, 'title': rec.title, 'author': rec.author,
+            #                         'publisher': rec.publisher, 'pub_date': rec.pub_date, 'category_name': rec.category_name, 
+            #                         'cover': rec.cover, 'description': rec.description, 'page_num': rec.page_num})
             
     else:
         return JsonResponse({'message': 'Not Found Recommend Books'})
     
     # print({'recommend_info': recommend_info, 'recommend_books': recommend_books})
     
-    return JsonResponse({'message': 'successfully', 'data': {'recommend_info': recommend_info, 'recommend_books': recommend_books}})
+    return JsonResponse({'message': 'successfully', 'data': {'recommend_info': recommend_info}})
  
 
 # AI 로직
@@ -136,7 +170,7 @@ def recommend_ai_logic(file_path, text, user_id):
                     confidence_negative = confidence.get("negative") / 100.0 + confidence_neutral
 
                     text_sentiment_score = confidence_positive * 0.7 + confidence_negative * 0.3
-
+                    
                     return {
                         "Sentiment": sentiment,
                         "Positive Confidence": round(confidence_positive, 7),
@@ -455,9 +489,11 @@ def recommend_ai_logic(file_path, text, user_id):
     
     # 사용자의 선호장르
     user_data = find_user_data(user_id)
+    print(user_data)
     genres = user_data['genres']
     mood = user_data['mood']
     interest = user_data['interest']
+    print(genres, mood, interest)
 
     # 사용자 리뷰 데이터 5권 전
 
