@@ -11,21 +11,8 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # 추천 아이디에 따른 책 결과 보내주기
 @csrf_exempt
-@require_POST
 def rec_result(request):
-    # 데이터 받아오기
-    try:
-        data = json.loads(request.body.decode('utf-8'))
-    except json.JSONDecodeError as e:
-        # JSON 디코딩 중에 오류가 발생한 경우
-        error_message = {'message': 'Invalid JSON format'}
-        return JsonResponse(error_message, status=400)
-    if not data:
-        error_message = {'message': '데이터를 받아오지 못했습니다.'}
-        return JsonResponse(error_message, status=400)
-    
-    # recommend_id 추출
-    recommend_id = data["recommend_id"]
+    recommend_id = request.GET.get('recommend_id')
     if not recommend_id:
         error_message = {'message': 'recommend_id를 받아오지 못했습니다.'}
         return JsonResponse(error_message, status=400)
