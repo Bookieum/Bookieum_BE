@@ -3,8 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from bookieum import models
 from django.core.files.storage import FileSystemStorage  # 파일저장
-import json
-import os
+import json, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 #AI
 #pip install konlpy pandas seaborn gensim wordcloud python-mecab-ko wget svgling joblib requests numpy  scikit-learn opencv-python keras tensorflow
@@ -42,6 +41,39 @@ def rec_result(request):
     recommend_info = {'recommend_id': recommend.recommend_id, 'pos_emotion': round(float(recommend.emotion)*100, 2), 'neg_emotion': round((1-float(recommend.emotion))*100, 2)}
     
     return JsonResponse({"recommend_info": recommend_info, "books": result})
+
+
+# 사용자가 선택한 책 DB에 반영하기
+@csrf_exempt
+@require_POST
+def rec_select(request):
+    # 데이터 받아오기
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError as e:
+        # JSON 디코딩 중에 오류가 발생한 경우
+        error_message = {'message': 'Invalid JSON format'}
+        return JsonResponse(error_message, status=400)
+    if not data:
+        error_message = {'message': '데이터를 받아오지 못했습니다.'}
+        return JsonResponse(error_message, status=400)
+    
+    # select_list 추출
+    select_list = data["select_list"]
+
+    if not select_list:
+        error_message = {'message': '선택 내역(select_list)을 받아오지 못했습니다.'}
+        return JsonResponse(error_message, status=400)
+    if len(select_list) == 0:
+        error_message = {'message': '책을 선택하지 않았습니다. 1권 이상 선택해 주세요.'}
+        return JsonResponse(error_message, status=400)
+
+    for mybook_id in select_list:
+        mybook = models.RecommendBooks.objects.get(mybook_id=mybook_id)
+        mybook.is_selected = 1
+        mybook.save()
+    
+    return JsonResponse({'message': 'successfully', 'select_list': select_list})
 
 
 # 사용자 선호 데이터 추출
