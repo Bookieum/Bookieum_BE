@@ -71,8 +71,6 @@ def recommendation(request):
     text = request.POST.get('text', '')
     if text == "":
         return JsonResponse({'message': 'text를 받아오지 못했습니다.'})
-    print("video:", uploaded_file)
-    print("text:", text)
     
     # 2) 유저 정보 불러오기
     access_token = request.POST.get('access_token', '')
@@ -86,7 +84,6 @@ def recommendation(request):
         return JsonResponse({'message': 'Not Found User'})
                          
     # 3) AI 책 추천
-    print(user.user_id)
     emotion, book_list = recommend_ai_logic('/media/'+file_name, text, user.user_id)
 
     # 4) 추천 내역 및 추천 도서 리스트 DB에 저장
