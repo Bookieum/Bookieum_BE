@@ -11,26 +11,37 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
 # 추천 아이디에 따른 책 결과 보내주기
-# def rec_result(request):
-#     # 데이터 받아오기
-#     try:
-#         data = json.loads(request.body.decode('utf-8'))
-#     except json.JSONDecodeError as e:
-#         # JSON 디코딩 중에 오류가 발생한 경우
-#         error_message = {'message': 'Invalid JSON format'}
-#         return JsonResponse(error_message, status=400)
-#     if not data:
-#         error_message = {'message': '데이터를 받아오지 못했습니다.'}
-#         return JsonResponse(error_message, status=400)
+@csrf_exempt
+@require_POST
+def rec_result(request):
+    # 데이터 받아오기
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError as e:
+        # JSON 디코딩 중에 오류가 발생한 경우
+        error_message = {'message': 'Invalid JSON format'}
+        return JsonResponse(error_message, status=400)
+    if not data:
+        error_message = {'message': '데이터를 받아오지 못했습니다.'}
+        return JsonResponse(error_message, status=400)
     
-#     # recommend_id 추출
-#     recommend_id = data["recommend_id"]
-#     if not recommend_id:
-#         error_message = {'message': 'recommend_id를 받아오지 못했습니다.'}
-#         return JsonResponse(error_message, status=400)
-#     books = models.Recommend.objects.get(recommend_id=recommend_id)
-#     result = {}
-#     return JsonResponse(result)
+    # recommend_id 추출
+    recommend_id = data["recommend_id"]
+    if not recommend_id:
+        error_message = {'message': 'recommend_id를 받아오지 못했습니다.'}
+        return JsonResponse(error_message, status=400)
+    
+    books = models.RecommendBooks.objects.filter(recommend_id=recommend_id).select_related("isbn").all()
+    result = []
+    for book in books:
+        result.append({'mybook_id': book.mybook_id, 'isbn_id': book.isbn.isbn_id, 'title': book.isbn.title, 'author': book.isbn.author,
+                       'publisher': book.isbn.publisher, 'pub_date': book.isbn.pub_date, 'category_name': book.isbn.category_name, 
+                        'cover': book.isbn.cover, 'description': book.isbn.description, 'page_num': book.isbn.page_num})
+        
+    recommend = models.Recommend.objects.get(recommend_id=recommend_id)
+    recommend_info = {'recommend_id': recommend.recommend_id, 'pos_emotion': round(float(recommend.emotion)*100, 2), 'neg_emotion': round((1-float(recommend.emotion))*100, 2)}
+    
+    return JsonResponse({"recommend_info": recommend_info, "books": result})
 
 
 # 사용자 선호 데이터 추출
@@ -89,7 +100,7 @@ def recommendation(request):
             emotion = emotion,
             answer_content = text
         )
-        recommend_info = {'recommend_id': recommend.recommend_id, 'pos_emotion': emotion*100, 'neg_emotion': round((1-emotion)*100, 1)}
+        recommend_info = {'recommend_id': recommend.recommend_id, 'pos_emotion': round(emotion*100, 2), 'neg_emotion': round((1-emotion)*100, 2)}
         
         # Recommend_books
         for rec in recommend_list:
@@ -489,11 +500,9 @@ def recommend_ai_logic(file_path, text, user_id):
     
     # 사용자의 선호장르
     user_data = find_user_data(user_id)
-    print(user_data)
     genres = user_data['genres']
     mood = user_data['mood']
     interest = user_data['interest']
-    print(genres, mood, interest)
 
     # 사용자 리뷰 데이터 5권 전
 
