@@ -44,40 +44,15 @@ def user_information(request):
     print(user_list)
 
     # history
-    check_user_id = get_object_or_404(models.Users, access_token=access_token)
-    h_user_id=check_user_id.user_id
+    user = models.Users.objects.get(access_token=access_token)
+    books = models.RecommendBooks.objects.filter(user=user).select_related('isbn').exclude(is_selected=0).order_by('-created_datetime').all()
+    history = []
+    for book in books:
+        history.append({"mybook_id": book.mybook_id, "recommend_id": book.recommend.recommend_id, "curr_page": book.curr_page, "created_datetime": book.created_datetime,
+                             "is_selected": book.is_selected, "title": book.isbn.title, "cover": book.isbn.cover})
+
+    return JsonResponse({'message': 'successfully', 'data':user_list,'history':history })  
     
-    # 조인
-    RecommendModel=models.Recommend.objects.select_related('user').filter(user_id=h_user_id)
-    print(RecommendModel)
-    
-    recommend_id_list=[]
-    for i in RecommendModel:
-        recommend_id_list.append(i.recommend_id)
-     
-    # 조인   
-    RecommendbooksModel=models.RecommendBooks.objects.select_related('recommend__user').filter(recommend_id__in=recommend_id_list)
-    print(RecommendbooksModel)
-    RecommendbooksModel_is_selected=RecommendbooksModel.filter(is_selected=1)
-    print(RecommendbooksModel_is_selected)  
-    
-    RecommendbooksModel_is_selected_isbn=[]
-    for i in RecommendbooksModel_is_selected:
-        RecommendbooksModel_is_selected_isbn.append(i.isbn_id)
-    print(RecommendbooksModel_is_selected_isbn)
-    
-    
-    #d=models.RecommendBooks.objects.filter(isbn_id__in=c_is_selected_isbn).prefetch_related('isbn')
-    result=models.Books.objects.filter(isbn_id__in=RecommendbooksModel_is_selected_isbn)
-    print(result)
-    
-    # fe 에서 필요한 정보 더 추가가능!
-    history=[]
-    for i in result:
-        history.append({'isbn_id':i.isbn_id,'title':i.title,'cover':i.cover})
-    print(history)
-    
-    return JsonResponse({'message': 'successfully', 'data':user_list, 'history': history})
 
 
 @csrf_exempt
