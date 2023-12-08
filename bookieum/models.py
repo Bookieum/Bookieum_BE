@@ -62,7 +62,7 @@ class RecommendBooks(models.Model):
     is_selected = models.IntegerField(default=0)
     created_datetime = models.DateTimeField(auto_now_add=True)
     reading_datetime = models.DateTimeField(blank=True, null=True)
-    curr_page = models.IntegerField(blank=True, null=True)
+    curr_page = models.IntegerField(default=0)
     is_completed = models.IntegerField(default=0)
 
     class Meta:
