@@ -55,6 +55,7 @@ def rec_select(request):
         error_message = {'message': '책을 선택하지 않았습니다. 1권 이상 선택해 주세요.'}
         return JsonResponse(error_message, status=400)
 
+    # DB 반영
     for mybook_id in select_list:
         mybook = models.RecommendBooks.objects.get(mybook_id=mybook_id)
         mybook.is_selected = 1
