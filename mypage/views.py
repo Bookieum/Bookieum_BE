@@ -36,26 +36,22 @@ def user_information(request):
         return JsonResponse(error_message, status=400)    
     
     # user_information
-    user_list = get_object_or_404(models.Users, access_token=access_token)
-    #user_list.home_addr=None
-    #user_list.save()
-    user_list=model_to_dict(user_list)
-    
+    user_info = model_to_dict(get_object_or_404(models.Users, access_token=access_token))
     # 읽은 권수 및 레벨업에 필요한 권수
     user = models.Users.objects.get(access_token=access_token)
     complete_book = models.RecommendBooks.objects.filter(user=user, is_completed=1).all()
     reading_num = len(complete_book)
-    user_list['reading_num'] = reading_num
+    user_info['reading_num'] = reading_num
     # 0~9 권: 0레벨 / 10~49권: 1레벨 / 50~99권: 2레벨 / 100권 이상: 3레벨 
-    if user_list['reading_level'] == 0:
-        user_list['need_num'] = 10 - reading_num
-    elif user_list['reading_level'] == 1:
-        user_list['need_num'] = 50 - reading_num
-    elif user_list['reading_level'] == 2:
-        user_list['need_num'] = 100 - reading_num
+    if user_info['reading_level'] == 0:
+        user_info['need_num'] = 10 - reading_num
+    elif user_info['reading_level'] == 1:
+        user_info['need_num'] = 50 - reading_num
+    elif user_info['reading_level'] == 2:
+        user_info['need_num'] = 100 - reading_num
     else:
-        user_list['need_num'] = 0
-        user_list['message'] = '이미 최고레벨입니다.'
+        user_info['need_num'] = 0
+        user_info['message'] = '이미 최고레벨입니다.'
 
     # history
     books = models.RecommendBooks.objects.filter(user=user).select_related('isbn').exclude(is_selected=0).order_by('-created_datetime').all()
@@ -64,7 +60,7 @@ def user_information(request):
         history.append({"mybook_id": book.mybook_id, "recommend_id": book.recommend.recommend_id, "curr_page": book.curr_page, "created_datetime": book.created_datetime,
                              "is_selected": book.is_selected, "title": book.isbn.title, "cover": book.isbn.cover})
 
-    return JsonResponse({'message': 'successfully', 'data':user_list,'history':history })  
+    return JsonResponse({'message': 'successfully', 'data':user_info,'history':history })  
     
 
 # 책 상세 페이지
