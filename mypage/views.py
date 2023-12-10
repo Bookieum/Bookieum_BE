@@ -39,12 +39,25 @@ def user_information(request):
     user_list = get_object_or_404(models.Users, access_token=access_token)
     #user_list.home_addr=None
     #user_list.save()
-    print(user_list)
     user_list=model_to_dict(user_list)
-    print(user_list)
+    
+    # 읽은 권수 및 레벨업에 필요한 권수
+    user = models.Users.objects.get(access_token=access_token)
+    complete_book = models.RecommendBooks.objects.filter(user=user, is_completed=1).all()
+    reading_num = len(complete_book)
+    user_list['reading_num'] = reading_num
+    # 0~9 권: 0레벨 / 10~49권: 1레벨 / 50~99권: 2레벨 / 100권 이상: 3레벨 
+    if user_list['reading_level'] == 0:
+        user_list['need_num'] = 10 - reading_num
+    elif user_list['reading_level'] == 1:
+        user_list['need_num'] = 50 - reading_num
+    elif user_list['reading_level'] == 2:
+        user_list['need_num'] = 100 - reading_num
+    else:
+        user_list['need_num'] = 0
+        user_list['message'] = '이미 최고레벨입니다.'
 
     # history
-    user = models.Users.objects.get(access_token=access_token)
     books = models.RecommendBooks.objects.filter(user=user).select_related('isbn').exclude(is_selected=0).order_by('-created_datetime').all()
     history = []
     for book in books:
