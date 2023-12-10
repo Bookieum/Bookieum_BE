@@ -47,7 +47,7 @@ class Recommend(models.Model):
     user = models.ForeignKey(Users, on_delete=models.Case)
     recommend_datetime = models.DateTimeField(auto_now_add=True)
     emotion = models.CharField(max_length=20)
-    answer_content = models.CharField(max_length=100)
+    answer_content = models.CharField(max_length=300)
 
     class Meta:
         managed = False
