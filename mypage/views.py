@@ -121,15 +121,13 @@ def book_progress(request):
     if int(curr_page) == recommend_book.isbn.page_num:
         recommend_book.is_completed = 1
         # 독서레벨 계산 및 반영
-        # 0~9 권: 0레벨 / 10~24권: 1레벨 / 25~39권: 2레벨 / 40~99권: 3레벨 / 100권 이상: 4레벨
+        # 0~9 권: 0레벨 / 10~49권: 1레벨 / 50~99권: 2레벨 / 100권 이상: 3레벨 
         complete_book = models.RecommendBooks.objects.filter(user=user, is_completed=1).all()
         num = len(complete_book)
         print(num)
         if num >= 100:
-            user.reading_level = 4
-        elif num >= 40:
             user.reading_level = 3
-        elif num >= 25:
+        elif num >= 50:
             user.reading_level = 2
         elif num >= 10:
             user.reading_level = 1
