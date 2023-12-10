@@ -51,7 +51,6 @@ def user_information(request):
         user_info['need_num'] = 100 - reading_num
     else:
         user_info['need_num'] = 0
-        user_info['message'] = '이미 최고레벨입니다.'
 
     # history
     books = models.RecommendBooks.objects.filter(user=user).select_related('isbn').exclude(is_selected=0).order_by('-created_datetime').all()
